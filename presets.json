@@ -1,0 +1,43 @@
+{
+  "_note": "Ready-made message sets. To use one, copy its messages into banner.json. Keep CTAs about follows, likes, comments and shares; don't ask for gifts or point people off TikTok.",
+  "warmup": [
+    "Just went LIVE 🎮 Pull up a chair!",
+    "New here? Say hi in the comments 👋",
+    "Tap Follow so you catch the next stream"
+  ],
+  "welcome": [
+    "Welcome in! Drop your rank in the comments 👇",
+    "First time here? Tap Follow, I stream this game a lot 🎮",
+    "Where are you watching from? Tell me below 🌎"
+  ],
+  "likes": [
+    "Tap the screen to send ❤️ Let's hit the like goal!",
+    "Every tap counts ❤️ Help us reach the goal",
+    "Double-tap if that play was clean 🔥"
+  ],
+  "comments": [
+    "Who wins this round? Call it in the comments 👇",
+    "Rate that play 1–10 in the comments",
+    "What should I play next? Tell me below 👇"
+  ],
+  "share": [
+    "Know a friend who'd love this? Share the LIVE 🔁",
+    "Share the stream with your squad 🔁"
+  ],
+  "follow": [
+    "Enjoying the stream? Tap Follow ➕",
+    "Follow to get notified next time I go LIVE"
+  ],
+  "hype": [
+    "CLUTCH! Tap ❤️ if you saw that 🔥",
+    "That was close 😮‍💨 Type GG if you're still here"
+  ],
+  "thanks": [
+    "Thanks for hanging out tonight 🙏",
+    "Huge thanks to everyone in chat 💙"
+  ],
+  "wrapup": [
+    "Last game of the night! Tap Follow for the next stream",
+    "Thanks for watching! See you next time 👋"
+  ]
+}
