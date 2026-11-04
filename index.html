@@ -47,6 +47,9 @@ body.preview{background:repeating-conic-gradient(#777 0 25%,#aaa 0 50%) 0 0/40px
     accentColor: "#FE2C55",
     separatorColor: "#25F4EE"
   };
+  // Bump this together with "pageVersion" in banner.json when the page itself
+  // changes; open copies (e.g. in LIVE Studio) then reload themselves once.
+  var PAGE_VERSION = "2";
   var q = new URLSearchParams(location.search);
   if (q.has("preview")) document.body.classList.add("preview");
   var DATA = q.get("data") || "banner.json";
@@ -108,6 +111,11 @@ body.preview{background:repeating-conic-gradient(#777 0 25%,#aaa 0 50%) 0 0/40px
     if (c.mode === "rotate") startRotate(c); else startScroll(c);
   }
   function update(d) {
+    if (d && d.pageVersion && String(d.pageVersion) !== PAGE_VERSION && q.get("v") !== String(d.pageVersion)) {
+      q.set("v", d.pageVersion);                     // new URL skips the cached copy of this page
+      location.replace(location.pathname + "?" + q.toString());
+      return;
+    }
     var c = merge(d), key = JSON.stringify(c);
     if (key === curKey) return;
     var first = !cur;
