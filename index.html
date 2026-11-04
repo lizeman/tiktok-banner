@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>LIVE Banner</title>
+<style>
+:root{--h:120px;--size:54px;--text:#fff;--bar:rgba(0,0,0,.55);--accent:#FE2C55;--sep:#25F4EE}
+html,body{margin:0;height:100%;background:transparent;overflow:hidden}
+body{display:flex;align-items:center;justify-content:center;font-family:"Segoe UI","Helvetica Neue",Arial,"Segoe UI Emoji","Apple Color Emoji","Noto Color Emoji",sans-serif}
+body.preview{background:repeating-conic-gradient(#777 0 25%,#aaa 0 50%) 0 0/40px 40px}
+#bar{width:calc(100% - 24px);height:var(--h);border-radius:calc(var(--h)/2);background:var(--bar);display:flex;align-items:center;overflow:hidden;transition:opacity .4s ease}
+#bar.off{opacity:0}
+#label{flex:none;margin-left:14px;padding:0 24px;height:calc(var(--h) - 28px);border-radius:999px;background:var(--accent);color:#fff;font-weight:800;font-size:calc(var(--size)*.6);display:flex;align-items:center;white-space:nowrap}
+#label:empty{display:none}
+#view{position:relative;flex:1;height:100%;overflow:hidden;-webkit-mask-image:linear-gradient(90deg,transparent,#000 48px,#000 calc(100% - 48px),transparent);mask-image:linear-gradient(90deg,transparent,#000 48px,#000 calc(100% - 48px),transparent)}
+#track{position:absolute;left:0;top:0;height:100%;display:flex;align-items:center;white-space:nowrap;will-change:transform}
+#one{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:0 40px;transition:opacity .4s ease,transform .4s ease}
+#one.out{opacity:0;transform:translateY(14px)}
+.run{display:inline-flex;align-items:center}
+.msg{color:var(--text);font-weight:800;font-size:var(--size);line-height:1;white-space:nowrap;text-shadow:0 2px 0 rgba(0,0,0,.35)}
+.sep{color:var(--sep);font-weight:800;font-size:calc(var(--size)*.75);margin:0 .9em}
+</style>
+</head>
+<body>
+<div id="bar" class="off"><div id="label"></div><div id="view"><div id="track"></div><div id="one" hidden></div></div></div>
+<script>
+(function () {
+  // Shown until banner.json loads, and kept if it can't be fetched.
+  var DEFAULTS = {
+    visible: true,
+    mode: "scroll",              // "scroll" or "rotate"
+    messages: [
+      "New here? Tap Follow so you never miss a match 🎮",
+      "Tap the screen to send likes ❤️ Help us hit the goal!",
+      "What's your rank? Tell me in the comments 👇",
+      "Share this LIVE with a friend who games 🔁"
+    ],
+    label: "",
+    separator: "•",
+    speed: 110,                  // px per second (scroll mode)
+    hold: 6,                     // seconds per message (rotate mode)
+    fontSize: 54,
+    height: 120,
+    textColor: "#FFFFFF",
+    barColor: "rgba(0,0,0,0.55)",
+    accentColor: "#FE2C55",
+    separatorColor: "#25F4EE"
+  };
+  var q = new URLSearchParams(location.search);
+  if (q.has("preview")) document.body.classList.add("preview");
+  var DATA = q.get("data") || "banner.json";
+  var POLL = Math.max(2000, Number(q.get("poll")) || 5000);
+  function $(id) { return document.getElementById(id); }
+  var bar = $("bar"), label = $("label"), view = $("view"), track = $("track"), one = $("one");
+  var cur = null, curKey = "", anim = null, timer = null, idx = 0;
+
+  function merge(d) {
+    var c = {}, k;
+    for (k in DEFAULTS) c[k] = DEFAULTS[k];
+    for (k in (d || {})) if (d[k] !== undefined && d[k] !== null) c[k] = d[k];
+    if (!Array.isArray(c.messages)) c.messages = [c.messages];
+    c.messages = c.messages.map(String).filter(function (m) { return m.trim(); });
+    if (!c.messages.length) c.messages = DEFAULTS.messages.slice();
+    return c;
+  }
+  function span(cls, text) { var e = document.createElement("span"); e.className = cls; e.textContent = text; return e; }
+  function fill(run, c) { c.messages.forEach(function (m) { run.appendChild(span("msg", m)); run.appendChild(span("sep", c.separator)); }); }
+  function stop() { if (anim) { anim.cancel(); anim = null; } clearTimeout(timer); track.textContent = ""; one.textContent = ""; }
+
+  function startScroll(c) {
+    track.hidden = false; one.hidden = true;
+    var run = document.createElement("div"); run.className = "run";
+    track.appendChild(run); fill(run, c);
+    // Repeat until one run is wider than the bar, so the loop never shows a gap.
+    for (var i = 0; i < 20 && run.getBoundingClientRect().width < view.clientWidth; i++) fill(run, c);
+    var w = run.getBoundingClientRect().width;
+    track.appendChild(run.cloneNode(true));
+    anim = track.animate(
+      [{ transform: "translate3d(0,0,0)" }, { transform: "translate3d(" + (-w) + "px,0,0)" }],
+      { duration: w / Math.max(20, Number(c.speed) || 110) * 1000, iterations: Infinity, easing: "linear" }
+    );
+  }
+  function fit() {
+    var m = one.firstChild; if (!m) return;
+    m.style.fontSize = "";
+    var max = one.clientWidth - 80, w = m.scrollWidth;
+    if (w > max) m.style.fontSize = (parseFloat(getComputedStyle(m).fontSize) * max / w) + "px";
+  }
+  function startRotate(c) {
+    track.hidden = true; one.hidden = false; idx = 0;
+    (function show() {
+      one.classList.add("out");
+      timer = setTimeout(function () {
+        one.textContent = ""; one.appendChild(span("msg", c.messages[idx++ % c.messages.length]));
+        fit(); one.classList.remove("out");
+        timer = setTimeout(show, Math.max(2, Number(c.hold) || 6) * 1000);
+      }, 400);
+    })();
+  }
+  function apply(c) {
+    var s = document.documentElement.style;
+    s.setProperty("--h", c.height + "px"); s.setProperty("--size", c.fontSize + "px");
+    s.setProperty("--text", c.textColor); s.setProperty("--bar", c.barColor);
+    s.setProperty("--accent", c.accentColor); s.setProperty("--sep", c.separatorColor);
+    label.textContent = c.label || "";
+    stop();
+    if (c.mode === "rotate") startRotate(c); else startScroll(c);
+  }
+  function update(d) {
+    var c = merge(d), key = JSON.stringify(c);
+    if (key === curKey) return;
+    var first = !cur;
+    var onlyVisibility = !first && JSON.stringify(merge(Object.assign({}, c, { visible: cur.visible }))) === curKey;
+    cur = c; curKey = key;
+    if (onlyVisibility) { bar.classList.toggle("off", !c.visible); return; }
+    if (first) { apply(c); bar.classList.toggle("off", !c.visible); return; }
+    bar.classList.add("off");                       // fade out, swap, fade back in
+    setTimeout(function () { apply(c); bar.classList.toggle("off", !c.visible); }, 420);
+  }
+  function poll() {
+    fetch(DATA + (DATA.indexOf("?") < 0 ? "?" : "&") + "t=" + Date.now(), { cache: "no-store" })
+      .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
+      .then(update)
+      .catch(function () { if (!cur) update({}); })   // keep the last banner on network errors
+      .then(function () { setTimeout(poll, POLL); });
+  }
+  (document.fonts && document.fonts.ready ? document.fonts.ready : Promise.resolve()).then(poll);
+})();
+</script>
+</body>
+</html>

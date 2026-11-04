@@ -1,0 +1,19 @@
+{
+  "visible": true,
+  "mode": "scroll",
+  "label": "",
+  "messages": [
+    "New here? Tap Follow so you never miss a match 🎮",
+    "Tap the screen to send likes ❤️ Help us hit the goal!",
+    "What's your rank? Tell me in the comments 👇",
+    "Share this LIVE with a friend who games 🔁"
+  ],
+  "speed": 110,
+  "hold": 6,
+  "fontSize": 54,
+  "height": 120,
+  "textColor": "#FFFFFF",
+  "barColor": "rgba(0,0,0,0.55)",
+  "accentColor": "#FE2C55",
+  "separatorColor": "#25F4EE"
+}
